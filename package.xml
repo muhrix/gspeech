@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>gspeech_ros</name>
+  <version>0.0.1</version>
+  <description>The gspeech_ros metapackage</description>
+
+  <maintainer email="muhrix@gmail.com">Murilo FM</maintainer>
+  <license>BSD</license>
+
+  <!-- <url type="website">http://ros.org/wiki/gspeech_ros</url> -->
+  
+  <author email="muhrix@gmail.com">Murilo FM</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>gspeech</run_depend>
+  <run_depend>gspeech_msgs</run_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
