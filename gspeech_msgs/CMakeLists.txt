@@ -46,6 +46,7 @@ find_package(catkin REQUIRED COMPONENTS
  add_message_files(
    FILES
     Speech.msg
+    SpeechArray.msg
 #   Message1.msg
 #   Message2.msg
  )
