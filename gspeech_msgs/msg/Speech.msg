@@ -1,2 +1,2 @@
 string speech
-int8 confidence
+float32 confidence
