@@ -14,6 +14,7 @@ import rospy
 from std_msgs.msg import String
 from std_msgs.msg import Float32
 from gspeech_msgs.msg import Speech
+from gspeech_msgs.msg import SpeechArray
 
 import sys
 import urllib2
@@ -30,9 +31,12 @@ cmd2='wget -q -U "Mozilla/5.0" --post-file recording.flac --header="Content-Type
 language = 'en-GB' # en-US, pt-BR, pt-PT, ...
 url_req = 'https://www.google.com/speech-api/v1/recognize?xjerr=1&client=chromium&lang='+language
 
+
+
 def speech():
 	#rospy.init_node('gspeech')
     msg = Speech()
+    linesArr = SpeechArray()
 
     try:
         ret = subprocess.call(cmd1, shell=True)
@@ -54,42 +58,26 @@ def speech():
         # print ROS_ERROR and carry on
         rospy.logerror('urllib2 request error: %s'%e.reason)
         
-    json_msg = json.loads(ret.read())
-    print json_msg
+    try:
+        json_msg = json.loads(ret.read())
+        print json_msg
+    except ValueError:
+        rospy.loginfo('No JSON object could be decoded')
 
     # status = 0 means something was recognised
     # it appears that status = 5 means that nothing could be
     # recognised, but sox recording and urllib2 requests worked
     if json_msg['status'] == 0:
-        msg.speech = json_msg['hypotheses'][0]['utterance']
-        msg.confidence = json_msg['hypotheses'][0]['confidence']
-        pubm.publish(msg)
+        for i in range(0, len(json_msg['hypotheses'])):
+            msg.speech = json_msg['hypotheses'][i]['utterance']
+            msg.confidence = json_msg['hypotheses'][i]['confidence']
+            linesArr.lines = linesArr.lines + [msg]
+        linesArr.header.stamp = rospy.Time.now()
+        pubm.publish(linesArr)
         #text = json_msg['hypotheses'][0]['utterance']
         #print text
-    else if json_msg['status'] == 5:
+    elif json_msg['status'] == 5:
         rospy.loginfo('Could not transcribe spoken line')
-            
-
-#	pubs = rospy.Publisher('speech', String)
-#	pubc = rospy.Publisher('confidence', Int8)
-	
-#	args2 = shlex.split(cmd2)
-	
-#	os.system('sox -r 16000 -t alsa default recording.flac silence 1 0.1 1% 1 1.5 1%')	
-#	output,error = subprocess.Popen(args2,stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
-		
-#	if not error and len(output)>16:
-#		a = eval(output)
-#		if a['hypotheses']:
-#			confidence= a['hypotheses'][0]['confidence']
-#			confidence= confidence*100
-#			data=a['hypotheses'][0]['utterance']
-#                       msg.speech = data
-#                       msg.confidence = confidence
-#			pubm.publish(msg)
-#			pubs.publish(String(data))
-#			pubc.publish(confidence)
-#			print String(data), confidence
 	
     speech()	
 	
@@ -98,7 +86,7 @@ def speech():
 if __name__ == '__main__':
     try:
         rospy.init_node('gspeech')
-        pubm = rospy.Publisher('spoken_line', Speech)
+        pubm = rospy.Publisher('spoken_line', SpeechArray)
         speech()
     except rospy.ROSInterruptException:
         pass
