@@ -16,6 +16,6 @@
   <run_depend>gspeech_msgs</run_depend>
 
   <export>
-    <metapackage/>
+    <metapackage />
   </export>
 </package>
